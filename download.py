@@ -1,6 +1,7 @@
 import requests
 import time
 import signal
+import json
 from sys import stdout
 from requests.exceptions import HTTPError
 from string import Template
@@ -15,8 +16,7 @@ def parse_args():
     argp.add_argument('id', help='university id (AF-ID)')
     argp.add_argument('year_from', type=int, help='year range start')
     argp.add_argument('year_to', type=int, help='year range end (inclusive)')
-    argp.add_argument('--api_key', required=True, help='ApiKey header for api.elsevier.com')
-    argp.add_argument('--inst_token', required=True, help='Insttoken header for api.elsevier.com')
+    argp.add_argument('--secret', required=True, help='json file containing "ApiKey" and "InstToken"')
     argp.add_argument('-l', '--log', default='record.log', help='log file')
     argp.add_argument('-o', '--out', default='out.txt', help='output file')
     return argp.parse_args()
@@ -30,11 +30,15 @@ def make_url(record_id, year, start, count):
     query = QUERY_TEMPLATE.substitute(id=record_id, year=year)
     return f"{URL_START}{query}&start={start}&count={count}{SORT}"
 
+secret = None
+with open(args.secret) as json_file:
+    secret = json.load(json_file)
+
 sess = requests.Session()
 sess.headers = { #type:ignore
     'User-Agent': 'UrFU SciCube BI/0.2',
-    'X-ELS-ApiKey': args.api_key,
-    'X-ELS-Insttoken': args.inst_token,
+    'X-ELS-ApiKey': secret['ApiKey'],
+    'X-ELS-Insttoken': secret['InstToken'],
     'X-ELS-ResourceVersion': "XOCS",
     'Accept': "application/json"
 }
