@@ -15,6 +15,8 @@ def parse_args():
     argp.add_argument('id')
     argp.add_argument('year_from', type=int)
     argp.add_argument('year_to', type=int)
+    argp.add_argument('-l', '--log', default='record.log')
+    argp.add_argument('-o', '--out', default='out.txt')
     return argp.parse_args()
 args = parse_args()
 
@@ -72,7 +74,7 @@ def on_interrupt(sig, frame):
     interrupted = True
 signal.signal(signal.SIGINT, on_interrupt)
 
-with open('record.log', mode='a') as log_file:
+with open(args.log, mode='a') as log_file:
     log = Log(log_file)
     year = args.year_from
     start_record = 1
@@ -88,7 +90,7 @@ with open('record.log', mode='a') as log_file:
             log.print(f"Continuing from year={year}, record={start_record}")
     except FileNotFoundError: pass
 
-    with open('out.txt', mode='a') as out_file:
+    with open(args.out, mode='a') as out_file:
         writer = tabular.Writer(out_file, OutRow)
         while year <= args.year_to:
             if interrupted: break
