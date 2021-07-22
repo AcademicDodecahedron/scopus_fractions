@@ -1,8 +1,14 @@
 Скачать записи из api:
-```
+```bash
 python download.py <id> <year_from> <year_to> \
-  --api_key <key> \
-  --inst_token <token> \
-  -l <log_file> \
-  -o <output_file>
+  --secret secret.json \
+  --log record.log \
+  -o out.txt
+```
+В аргемент secret передать json-файл вида:
+```json
+{
+  "ApiKey": "",
+  "InstToken": ""
+}
 ```
