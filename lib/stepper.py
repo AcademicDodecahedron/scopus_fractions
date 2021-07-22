@@ -1,5 +1,4 @@
 from typing import List
-from .log import Log
 
 class Stepper:
     def __init__(
