@@ -5,7 +5,7 @@ python download.py <id> <year_from> <year_to> \
   --log record.log \
   -o out.txt
 ```
-В аргемент secret передать json-файл вида:
+В аргумент secret передать json-файл вида:
 ```json
 {
   "ApiKey": "",
