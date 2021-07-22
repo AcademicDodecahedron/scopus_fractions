@@ -1,11 +1,12 @@
 import requests
-import random
 import time
+import signal
 from sys import stdout
 from requests.exceptions import HTTPError
 from string import Template
+from typing import NamedTuple
 from argparse import ArgumentParser
-from lib import web, secret
+from lib import secret, tabular
 from lib.log import Log
 from lib.stepper import Stepper
 
@@ -34,45 +35,93 @@ sess.headers = { #type:ignore
     'Accept': "application/json"
 }
 
-def try_get_record_count(record_id, year, start=1):
+MIN_TIME_GAP = 2
+last_request_time = None
+def get_safe(url):
+    global last_request_time
+    current_time = time.time()
+    if last_request_time is not None and current_time - last_request_time < MIN_TIME_GAP:
+        time.sleep(MIN_TIME_GAP + last_request_time - current_time)
+
+    last_request_time = time.time()
+
+    response = sess.get(url)
+    response.raise_for_status()
+    return response
+
+def get_record_count(record_id, year, start):
     url = make_url(record_id, year, start, 0)
 
-    return web.try_get(sess, url) \
-        .map(lambda resp: int(resp.json()['search-results']['opensearch:totalResults']))
-
-log = Log('record.log')
-
-def sleep_random(max_time):
-    sleep_time = random.random() * max_time
-    print(' (sleep {:.2f})'.format(sleep_time), end='')
-    stdout.flush()
-    time.sleep(sleep_time)
+    response = get_safe(url)
+    return int(response.json()['search-results']['opensearch:totalResults'])
 
 def load_record(record_id, year, start_record, record_count):
-    sleep_random(45)
     url = make_url(record_id, year, start_record, record_count)
-    return web.get_ok(sess, url).json()
+    return get_safe(url)
 
-for year in range(args.year_from, args.year_to + 1):
+class OutRow(NamedTuple):
+    year: int
+    start: int
+    count: int
+    ok: bool
+    response: str
+
+interrupted = False
+def on_interrupt(sig, frame):
+    global interrupted
+    interrupted = True
+signal.signal(signal.SIGINT, on_interrupt)
+
+with open('record.log', mode='a') as log_file:
+    log = Log(log_file)
+    year = args.year_from
     start_record = 1
-    for count in log.result(try_get_record_count(args.id, year, start_record)):
-        log.print(f"Found {count} items for year {year}")
 
-        stepper = Stepper(
-            start=1,
-            total=count,
-            steps=[100,50,25,12,6,3,1]
-        )
+    try:
+        last_line = tabular.read_last_line('out.txt', OutRow)
+        if last_line is not None:
+            year = last_line.year
+            start_record = last_line.start
+            if last_line.ok:
+                start_record += last_line.count
 
-        for start_current, steps_current in stepper:
-            print(f"Querying year {year} {start_current}-{start_current + steps_current - 1} [{start_record}-{count}]", end='')
-            try:
-                response = load_record(args.id, year, start_current, steps_current)
-                print(' - OK')
-                stepper.step_success()
-                log.print(response)
+            log.print(f"Continuing from year={year}, record={start_record}")
+    except FileNotFoundError: pass
+
+    with open('out.txt', mode='a') as out_file:
+        writer = tabular.Writer(out_file, OutRow)
+        while year <= args.year_to:
+            if interrupted: break
+            log_head = f"[id={args.id}, year={year}]"
+
+            count = None
+            try: count = get_record_count(args.id, year, start_record)
             except HTTPError as err:
-                print(' - Err')
-                log.print(err)
-                for skipped_record in stepper.step_failed():
-                    log.print(f"Skipping record {skipped_record}")
+                log.print(f"{log_head} Failed to get number of records: {err}")
+                continue
+
+            log.print(f"{log_head} Found {count} records")
+            stepper = Stepper(
+                start=start_record,
+                total=count,
+                steps=[100,50,25,12,6,3,1]
+            )
+
+            for start_current, steps_current in stepper:
+                if interrupted: break
+                log.print(f"{log_head} Requesting records {start_current}-{start_current + steps_current - 1} [Total: {start_record}-{count}]", end='')
+                stdout.flush()
+
+                try:
+                    response = load_record(args.id, year, start_current, steps_current)
+                    log.print(' - OK')
+                    writer.write(OutRow(year, start_current, steps_current, True, response.text))
+                    stepper.step_success()
+                except HTTPError as err:
+                    log.print(f" - {err}")
+                    writer.write(OutRow(year, start_current, steps_current, False, str(err)))
+                    skipped = stepper.step_failed()
+                    if skipped is not None:
+                        log.print(f"Skipping record {skipped}")
+            year += 1
+            start_record = 1

@@ -1,4 +1,3 @@
-from safetywrap import Some, Nothing
 from typing import List
 from .log import Log
 
@@ -9,14 +8,10 @@ class Stepper:
         total: int,
         steps: List[int]
     ):
-        self.start = start
         self.total = total
         self.steps = steps
         self.index = 0
         self.start_current = start
-
-    def in_progress(self):
-        return self.start_current <= (self.start + self.total - 1)
 
     def reset_step(self):
         self.index = 0
@@ -32,11 +27,10 @@ class Stepper:
             start_previous = self.start_current
             self.start_current += 1
             self.reset_step()
-            return Some(start_previous)
-        return Nothing()
+            return start_previous
 
     def __iter__(self):
-        while self.start_current <= (self.start + self.total - 1):
+        while self.start_current <= self.total:
             steps_current = self.steps[self.index]
             if (self.start_current + steps_current - 1) > self.total:
                 steps_current = self.total - self.start_current + 1;
