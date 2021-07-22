@@ -10,19 +10,13 @@ from lib import tabular
 from lib.log import Log
 from lib.stepper import Stepper
 
-from lib import secret
-# lib/secret.py is not in the git repo
-# contains secret constants
-###########################
-# API_KEY = ''
-# INST_TOKEN = ''
-###########################
-
 def parse_args():
     argp = ArgumentParser()
     argp.add_argument('id', help='university id (AF-ID)')
     argp.add_argument('year_from', type=int, help='year range start')
     argp.add_argument('year_to', type=int, help='year range end (inclusive)')
+    argp.add_argument('--api_key', help='ApiKey header for api.elsevier.com')
+    argp.add_argument('--inst_token', help='Insttoken header for api.elsevier.com')
     argp.add_argument('-l', '--log', default='record.log', help='log file')
     argp.add_argument('-o', '--out', default='out.txt', help='output file')
     return argp.parse_args()
@@ -39,8 +33,8 @@ def make_url(record_id, year, start, count):
 sess = requests.Session()
 sess.headers = { #type:ignore
     'User-Agent': 'UrFU SciCube BI/0.2',
-    'X-ELS-ApiKey': secret.API_KEY,
-    'X-ELS-Insttoken': secret.INST_TOKEN,
+    'X-ELS-ApiKey': args.api_key,
+    'X-ELS-Insttoken': args.inst_token,
     'X-ELS-ResourceVersion': "XOCS",
     'Accept': "application/json"
 }
