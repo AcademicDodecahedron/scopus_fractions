@@ -1,16 +1,15 @@
 import requests
 import time
 import signal
-import json
 from sys import stdout
 from requests.exceptions import HTTPError
 from string import Template
-from typing import NamedTuple
 from argparse import ArgumentParser
 from pathlib import Path
 from lib import tabular, secret
 from lib.log import Log
 from lib.stepper import Stepper
+from lib.model import RequestResult
 
 # Если не указан аргумент --secret,
 # искать secret.json в папке со скриптом
@@ -73,13 +72,6 @@ def load_record(record_id, year, start_record, record_count):
     url = make_url(record_id, year, start_record, record_count)
     return get_safe(url)
 
-class OutRow(NamedTuple):
-    year: int
-    start: int
-    count: int
-    ok: bool
-    response: str
-
 # По сигналу прерывания (Ctrl-C) сразу не закрывать,
 # докачать текущую запись
 interrupted = False
@@ -96,7 +88,7 @@ with open(args.log, mode='a') as log_file:
     # Если есть файл с уже загруженными записями,
     # продолжить с последней строки
     try:
-        last_line = tabular.read_last_line(args.out, OutRow)
+        last_line = tabular.read_last_line(args.out, RequestResult)
         if last_line is not None:
             year = last_line.year
             start_record = last_line.start
@@ -107,7 +99,7 @@ with open(args.log, mode='a') as log_file:
     except FileNotFoundError: pass
 
     with open(args.out, mode='a') as out_file:
-        writer = tabular.Writer(out_file, OutRow)
+        writer = tabular.Writer(out_file, RequestResult)
         while year <= args.year_to:
             if interrupted: break
             log_head = f"[id={args.id}, year={year}]"
@@ -135,11 +127,11 @@ with open(args.log, mode='a') as log_file:
                 try:
                     response = load_record(args.id, year, start_current, steps_current)
                     log.print(' - OK')
-                    writer.write(OutRow(year, start_current, steps_current, True, response.text))
+                    writer.write(RequestResult(year, start_current, steps_current, True, response.text))
                     stepper.step_success() # Шагнуть на диапазон steps_current
                 except HTTPError as err:
                     log.print(f" - {err}")
-                    writer.write(OutRow(year, start_current, steps_current, False, str(err)))
+                    writer.write(RequestResult(year, start_current, steps_current, False, str(err)))
                     skipped = stepper.step_failed() # Уменьшить диапазон или пропустить запись
                     if skipped is not None:
                         log.print(f"Skipping record {skipped}")
