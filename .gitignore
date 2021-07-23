@@ -2,4 +2,4 @@
 *.log
 *.txt
 *.xlsx
-secret.json
+secret-filled.json

@@ -7,20 +7,27 @@ from requests.exceptions import HTTPError
 from string import Template
 from typing import NamedTuple
 from argparse import ArgumentParser
-from lib import tabular
+from pathlib import Path
+from lib import tabular, secret
 from lib.log import Log
 from lib.stepper import Stepper
+
+# Если не указан аргумент --secret,
+# искать secret.json в папке со скриптом
+def default_json_path():
+    return str(Path(__file__).parent.joinpath('secret.json'))
 
 def parse_args():
     argp = ArgumentParser()
     argp.add_argument('id', help='university id (AF-ID)')
     argp.add_argument('year_from', type=int, help='year range start')
     argp.add_argument('year_to', type=int, help='year range end (inclusive)')
-    argp.add_argument('--secret', required=True, help='json file containing "ApiKey" and "InstToken"')
+    argp.add_argument('--secret', default=default_json_path(), help='json file containing "ApiKey" and "InstToken"')
     argp.add_argument('-l', '--log', default='record.log', help='log file')
     argp.add_argument('-o', '--out', default='out.txt', help='output file')
     return argp.parse_args()
 args = parse_args()
+api_key, inst_token = secret.load_secrets(args.secret)
 
 QUERY_TEMPLATE = Template('( AF-ID ( $id ) ) AND  ( PUBYEAR IS $year ) AND NOT  DOCTYPE ( ip )')
 SORT = '&sort=orig-load-date&field=eid,citedby-count,prism:coverDisplayDate,source-id,prism:doi,subtype,prism:aggregationType,author,affiliation'
@@ -30,15 +37,11 @@ def make_url(record_id, year, start, count):
     query = QUERY_TEMPLATE.substitute(id=record_id, year=year)
     return f"{URL_START}{query}&start={start}&count={count}{SORT}"
 
-secret = None
-with open(args.secret) as json_file:
-    secret = json.load(json_file)
-
 sess = requests.Session()
 sess.headers = { #type:ignore
     'User-Agent': 'UrFU SciCube BI/0.2',
-    'X-ELS-ApiKey': secret['ApiKey'],
-    'X-ELS-Insttoken': secret['InstToken'],
+    'X-ELS-ApiKey': api_key,
+    'X-ELS-Insttoken': inst_token,
     'X-ELS-ResourceVersion': "XOCS",
     'Accept': "application/json"
 }
