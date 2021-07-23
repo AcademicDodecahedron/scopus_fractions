@@ -20,3 +20,17 @@ python download.py <id> <year_from> <year_to>
   "InstToken": ""
 }
 ```
+## Генерация Excel-файла
+```bash
+python generate.py <template> <id> \
+      --fractions out.txt \
+      --publications Publications.csv
+```
+- `--fractions FRACTIONS`  
+Файл, сгенерированный download.py
+- `--publications PUBLICATIONS`  
+csv-файл, копируемый на лист 'публикации'
+
+Необязательные агрументы:
+- `-o OUT`  
+Куда сохранять excel-файл  
