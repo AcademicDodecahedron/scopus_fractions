@@ -32,6 +32,15 @@ def decode_line(line: str, row_type):
 
     return row_type(*fields_converted)
 
+class Reader:
+    def __init__(self, file, row_type):
+        self.file = file
+        self.row_type = row_type
+
+    def __iter__(self):
+        for line in self.file:
+            yield decode_line(line, self.row_type)
+
 def read_last_line(file, row_type):
     last_line = None
     with open(file, mode='r') as file:
