@@ -26,7 +26,7 @@ id_aff_trans.append([args.id, args.id])
 
 if args.fractions is not None:
     print('Reading', args.fractions)
-    with open(args.fractions) as file:
+    with open(args.fractions, encoding='utf-8') as file:
         for row_index, row in enumerate(tabular.Reader(file, RequestResult)):
             if not row.ok:
                 print(f"Skipping row {row_index}: Failed Request")
@@ -72,7 +72,7 @@ PUBLICATION_FORMULAS = [
 
 if args.publications is not None:
     print('Reading ', args.publications)
-    with open(args.publications) as file:
+    with open(args.publications, encoding='utf-8') as file:
         reader = blockcsv.reader(file, '"Title","Authors","Number of Authors"')
 
         headings = next(reader) + ['фракции', 'snipThresholds', 'критерийотбора']
