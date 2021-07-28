@@ -80,7 +80,7 @@ def on_interrupt(sig, frame):
     interrupted = True
 signal.signal(signal.SIGINT, on_interrupt)
 
-with open(args.log, mode='a') as log_file:
+with open(args.log, mode='a', encoding='utf-8') as log_file:
     log = Log(log_file)
     year = args.year_from
     start_record = 1
@@ -98,7 +98,7 @@ with open(args.log, mode='a') as log_file:
             log.print(f"Continuing from year={year}, record={start_record}")
     except FileNotFoundError: pass
 
-    with open(args.out, mode='a') as out_file:
+    with open(args.out, mode='a', encoding='utf-8') as out_file:
         writer = tabular.Writer(out_file, RequestResult)
         while year <= args.year_to:
             if interrupted: break
