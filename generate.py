@@ -92,5 +92,6 @@ def update_table(sheet, name):
 
 update_table(id_aff_trans, 'id_aff_trans')
 update_table(fractions, 'фракции')
-make_table(publications, 'публикации')
+if args.publications is not None:
+    make_table(publications, 'публикации')
 wb.save(args.out)
