@@ -65,7 +65,7 @@ def try_convert_numeric(value: str):
     return value
 
 PUBLICATION_FORMULAS = [
-    '=IFERROR(VLOOKUP(публикации[[#This Row],[EID]],фракцииУниверситет[],2,0),"")',
+    f'=IFERROR(SUMIFS(фракции[фракции],фракции[id_aff_trans],"={args.id}",фракции[eid],"="&публикации[[#This Row],[EID]]),"")',
     '=IFERROR(VLOOKUP(публикации[[#This Row],[Year]],snipThresholds[],2,0),0)',
     '=IF(публикации[[#This Row],[SNIP (publication year)]]>=публикации[[#This Row],[snipThresholds]],"Q1 Q2","Q3 Q4 n/a")'
 ]
@@ -79,7 +79,7 @@ if args.publications is not None:
         publications.append(headings)
         for row in reader:
             row_converted = list(map(try_convert_numeric, row))
-            publications.append(row_converted + PUBLICATION_FORMULAS)
+            publications.append(row_converted + PUBLICATION_FORMULAS) #type:ignore
 
 def get_cell_range(sheet):
     return "A1:" + get_column_letter(sheet.max_column) + str(sheet.max_row)
