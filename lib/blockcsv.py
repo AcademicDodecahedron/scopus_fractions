@@ -1,3 +1,5 @@
+# (c) E-kvadrat Consulting & Media, 2021
+
 from io import StringIO
 from typing import TextIO
 import csv

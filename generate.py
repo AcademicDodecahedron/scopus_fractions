@@ -1,3 +1,5 @@
+# (c) E-kvadrat Consulting & Media, 2021
+
 import openpyxl
 import json
 import re
