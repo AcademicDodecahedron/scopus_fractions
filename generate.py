@@ -19,7 +19,7 @@ def parse_args():
     return argp.parse_args()
 args = parse_args()
 
-wb = openpyxl.load_workbook(args.template)
+wb = openpyxl.load_workbook(args.template, read_only=True)
 id_aff_trans = wb['id_aff_trans']
 fractions = wb['фракции']
 publications = wb['публикации']
