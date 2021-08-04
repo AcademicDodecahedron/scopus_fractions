@@ -2,4 +2,5 @@
 *.log
 *.txt
 *.xlsx
+*.xlsx#
 secret-filled.json
