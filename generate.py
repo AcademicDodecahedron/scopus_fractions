@@ -19,7 +19,7 @@ def parse_args():
     return argp.parse_args()
 args = parse_args()
 
-wb = openpyxl.load_workbook(args.template, read_only=True)
+wb = openpyxl.load_workbook(args.template)
 id_aff_trans = wb['id_aff_trans']
 fractions = wb['фракции']
 publications = wb['публикации']
@@ -66,6 +66,15 @@ def try_convert_numeric(value: str):
         return float(value)
     return value
 
+PUBLICATION_HEADINGS = [
+    'фракции',
+    'snipThresholds',
+    'критерийотбора',
+    'quartile SNIP',
+    'SNIP95',
+    'Discontinued'
+]
+
 PUBLICATION_FORMULAS = [
     f'=IFERROR(SUMIFS(фракции[фракции],фракции[id_aff_trans],"={args.id}",фракции[eid],"="&публикации[[#This Row],[EID]]),"")',
     '=IFERROR(VLOOKUP(публикации[[#This Row],[Year]],snipThresholds[],2,0),0)',
@@ -77,7 +86,7 @@ if args.publications is not None:
     with open(args.publications, encoding='utf-8') as file:
         reader = blockcsv.reader(file, '"Title","Authors","Number of Authors"')
 
-        headings = next(reader) + ['фракции', 'snipThresholds', 'критерийотбора']
+        headings = next(reader) + PUBLICATION_HEADINGS
         publications.append(headings)
         for row in reader:
             row_converted = list(map(try_convert_numeric, row))
