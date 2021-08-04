@@ -66,10 +66,22 @@ def try_convert_numeric(value: str):
         return float(value)
     return value
 
+PUBLICATION_HEADINGS = [
+    'фракции',
+    'snipThresholds',
+    'критерийотбора',
+    'quartile SNIP',
+    'SNIP95',
+    'Discontinued'
+]
+
 PUBLICATION_FORMULAS = [
     f'=IFERROR(SUMIFS(фракции[фракции],фракции[id_aff_trans],"={args.id}",фракции[eid],"="&публикации[[#This Row],[EID]]),"")',
     '=IFERROR(VLOOKUP(публикации[[#This Row],[Year]],snipThresholds[],2,0),0)',
-    '=IF(публикации[[#This Row],[SNIP (publication year)]]>=публикации[[#This Row],[snipThresholds]],"Q1 Q2","Q3 Q4 n/a")'
+    '=IF(публикации[[#This Row],[SNIP (publication year)]]>=публикации[[#This Row],[snipThresholds]],"Q1 Q2","Q3 Q4 n/a")',
+    '=IFERROR(VLOOKUP(публикации[[#This Row],[Source ID]]&"#"&публикации[[#This Row],[Year]],SNIP95[],10,0),NA())',
+    '=IFERROR(VLOOKUP(публикации[[#This Row],[Source ID]]&"#"&публикации[[#This Row],[Year]],SNIP95[],11,0),NA())',
+    '=IFERROR(VLOOKUP(публикации[[#This Row],[Source ID]],Discontinued[],2,0),"")'
 ]
 
 if args.publications is not None:
@@ -77,23 +89,25 @@ if args.publications is not None:
     with open(args.publications, encoding='utf-8') as file:
         reader = blockcsv.reader(file, '"Title","Authors","Number of Authors"')
 
-        headings = next(reader) + ['фракции', 'snipThresholds', 'критерийотбора']
+        headings = next(reader) + PUBLICATION_HEADINGS
         publications.append(headings)
         for row in reader:
             row_converted = list(map(try_convert_numeric, row))
             publications.append(row_converted + PUBLICATION_FORMULAS) #type:ignore
 
-def get_cell_range(sheet):
-    return "A1:" + get_column_letter(sheet.max_column) + str(sheet.max_row)
-def make_table(sheet, name):
-    table = Table(displayName=name, ref=get_cell_range(sheet))
-    sheet.add_table(table)
-def update_table(sheet, name):
-    table = sheet.tables[name]
-    table.ref = get_cell_range(sheet)
+def update_or_create_table(sheet, name):
+    table = sheet.tables.get(name, None)
+    if not table:
+        table = Table(displayName=name)
+        sheet.add_table(table)
 
-update_table(id_aff_trans, 'id_aff_trans')
-update_table(fractions, 'фракции')
-if args.publications is not None:
-    make_table(publications, 'публикации')
+    cell_range = "A1:" + get_column_letter(sheet.max_column) + str(sheet.max_row)
+    table.ref = cell_range
+
+update_or_create_table(id_aff_trans, 'id_aff_trans')
+if args.fractions:
+    update_or_create_table(fractions, 'фракции')
+if args.publications:
+    update_or_create_table(publications, 'публикации')
+
 wb.save(args.out)
