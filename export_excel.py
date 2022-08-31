@@ -152,7 +152,7 @@ if __name__ == "__main__":
     parser.add_argument("-o", "--out", default="out.xlsx", help="output .xlsx file")
     args = parser.parse_args()
 
-    with open(args.fractions) as fractions:
+    with open(args.fractions, encoding='utf-8') as fractions:
         wb = fill_workbook(fractions, args.id)
 
     wb.save(args.out)
