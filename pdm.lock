@@ -14,14 +14,14 @@ dependencies = [
 ]
 
 [[package]]
-name = "option"
-version = "2.1.0"
-requires_python = ">=3.7,<4"
-summary = "Rust like Option and Result types in Python"
+name = "safetywrap"
+version = "1.5.0"
+requires_python = ">=3.6"
+summary = "Rust-inspired typesafe result types"
 
 [metadata]
 lock_version = "4.0"
-content_hash = "sha256:db72e6ab1ab71283fab33417a6130d14836d29471429573a5235e968b451b2bd"
+content_hash = "sha256:b58c61e6120af5bd535fa191b904b8ac8a0d229773f4970e5fe443a3f005fca3"
 
 [metadata.files]
 "et-xmlfile 1.1.0" = [
@@ -32,7 +32,7 @@ content_hash = "sha256:db72e6ab1ab71283fab33417a6130d14836d29471429573a5235e968b
     {url = "https://files.pythonhosted.org/packages/2c/b8/ff77a718173fd73e49f883b4fda88f11af1fc51edb9252af3785b0cad987/openpyxl-3.0.10.tar.gz", hash = "sha256:e47805627aebcf860edb4edf7987b1309c1b3632f3750538ed962bbcc3bd7449"},
     {url = "https://files.pythonhosted.org/packages/7b/60/9afac4fd6feee0ac09339de4101ee452ea643d26e9ce44c7708a0023f503/openpyxl-3.0.10-py2.py3-none-any.whl", hash = "sha256:0ab6d25d01799f97a9464630abacbb34aafecdcaa0ef3cba6d6b3499867d0355"},
 ]
-"option 2.1.0" = [
-    {url = "https://files.pythonhosted.org/packages/15/7a/3622379bd82f70a0b88779566c4847f167ae54103187922b69ad63d3c3b2/option-2.1.0.tar.gz", hash = "sha256:9fe95a231e54724d2382a5124b55cd84b82339edf1d4e88d6977cedffbfeadf1"},
-    {url = "https://files.pythonhosted.org/packages/b0/e7/a4ece49ebcb33fc43577538f85406598ec93d5675dfb30331ec586351656/option-2.1.0-py3-none-any.whl", hash = "sha256:21ccd9a437dbee0341700367efb68e82065fd7a7dba09f8c3263cf2dc1a2b0e0"},
+"safetywrap 1.5.0" = [
+    {url = "https://files.pythonhosted.org/packages/0e/27/a7c7902444fdc6781c38080f5e40ddff0d192acada78ed4bcdba3a7f4651/safetywrap-1.5.0.tar.gz", hash = "sha256:e331b86fb33201e072e2e01f851b1ca8ac7b3788588844a3e451b1aef164ecb8"},
+    {url = "https://files.pythonhosted.org/packages/bb/bd/1b5f2adde565b73b4358d1bc39f302410ee0202cc0a9e6a78d3783e5a17c/safetywrap-1.5.0-py3-none-any.whl", hash = "sha256:90cd20e7fc90bb8e1cdbb147969bb3623e3e1febd206da3e5a157f298960b574"},
 ]

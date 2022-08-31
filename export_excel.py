@@ -1,14 +1,14 @@
 from argparse import ArgumentParser
 import json
 import re
-from typing import Optional, TextIO
+from typing import TextIO
 from dataclasses import dataclass
 
 from openpyxl import Workbook
 from openpyxl.worksheet.table import Table
 from openpyxl.worksheet.worksheet import Worksheet
 from openpyxl.utils import get_column_letter
-from option import Option
+from safetywrap import Option, Result
 
 from lib import tabular
 from lib.model import RequestResult
@@ -106,9 +106,10 @@ def fill_workbook(fractions: TextIO, uni_id: str):
                     entry.get("source-id", None),
                     entry.get("subtype", None),
                     entry.get("subtypeDescription", None),
-                    Option.maybe(year)
-                    .flatmap(lambda year: Option.maybe(YEAR_REGEX.search(year)))
+                    Option.of(year)
+                    .flatmap(lambda year: Option.of(YEAR_REGEX.search(year)))
                     .map(lambda match: match.group(0))
+                    .flatmap(lambda text: Result.of(int, text).ok())
                     .unwrap_or(None),
                 ]
             )
