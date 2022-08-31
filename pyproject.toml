@@ -1,0 +1,19 @@
+[project]
+name = ""
+version = ""
+description = ""
+authors = [
+    {name = "snorkysnark", email = "snorkysnark@gmail.com"},
+]
+dependencies = [
+    "openpyxl>=3.0.10",
+]
+requires-python = "*"
+license = {text = "GPL-3.0"}
+
+[build-system]
+requires = ["pdm-pep517>=1.0.0"]
+build-backend = "pdm.pep517.api"
+
+[tool]
+[tool.pdm]

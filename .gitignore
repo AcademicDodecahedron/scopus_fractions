@@ -4,3 +4,6 @@
 *.xlsx
 *.xlsx#
 secret-filled.json
+
+__pypackages__/
+.pdm.toml
