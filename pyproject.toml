@@ -7,8 +7,9 @@ authors = [
 ]
 dependencies = [
     "openpyxl>=3.0.10",
+    "option>=2.1.0",
 ]
-requires-python = "*"
+requires-python = ">=3.10"
 license = {text = "GPL-3.0"}
 
 [build-system]

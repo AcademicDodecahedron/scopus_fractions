@@ -1,12 +1,14 @@
 from argparse import ArgumentParser
 import json
-from typing import TextIO
+import re
+from typing import Optional, TextIO
 from dataclasses import dataclass
 
 from openpyxl import Workbook
 from openpyxl.worksheet.table import Table
 from openpyxl.worksheet.worksheet import Worksheet
 from openpyxl.utils import get_column_letter
+from option import Option
 
 from lib import tabular
 from lib.model import RequestResult
@@ -47,6 +49,7 @@ class WorkbookSheets:
                 "source-id",
                 "TypeRecordShort",
                 "TypeRecord",
+                "year_extract",
             ]
         )
 
@@ -77,6 +80,9 @@ class WorkbookSheets:
         self.wb.save(filename)
 
 
+YEAR_REGEX = re.compile(r"\d\d\d\d")
+
+
 def fill_workbook(fractions: TextIO, uni_id: str):
     wb = WorkbookSheets.new()
     wb.id_aff_trans.append([uni_id, uni_id])
@@ -89,16 +95,21 @@ def fill_workbook(fractions: TextIO, uni_id: str):
         entries = json.loads(row.response)["search-results"].get("entry", [])
         for entry in entries:
             eid = entry["eid"]
+            year = entry.get("prism:coverDisplayDate", None)
             wb.record.append(
                 [
                     eid,
-                    entry.get("prism:coverDisplayDate", None),
+                    year,
                     entry.get("prism:doi", None),
                     entry.get("citedby-count", None),
                     entry.get("prism:aggregationType", None),
                     entry.get("source-id", None),
                     entry.get("subtype", None),
                     entry.get("subtypeDescription", None),
+                    Option.maybe(year)
+                    .flatmap(lambda year: Option.maybe(YEAR_REGEX.search(year)))
+                    .map(lambda match: match.group(0))
+                    .unwrap_or(None),
                 ]
             )
             for affiliation in entry.get("affiliation", []):
@@ -152,7 +163,7 @@ if __name__ == "__main__":
     parser.add_argument("-o", "--out", default="out.xlsx", help="output .xlsx file")
     args = parser.parse_args()
 
-    with open(args.fractions, encoding='utf-8') as fractions:
+    with open(args.fractions, encoding="utf-8") as fractions:
         wb = fill_workbook(fractions, args.id)
 
     wb.save(args.out)
